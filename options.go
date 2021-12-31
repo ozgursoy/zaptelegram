@@ -44,6 +44,7 @@ func WithFormatter(f func(e zapcore.Entry) string) Option {
 	}
 }
 
+// WithQueue Enables queue mode which is waits to send logs at one time
 func WithQueue(interval int) Option {
 	return func(h *TelegramHook) error {
 		h.queue = true

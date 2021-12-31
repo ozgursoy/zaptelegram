@@ -53,7 +53,7 @@ func (c *telegramClient) formatMessage(e zapcore.Entry) string {
 	if e.LoggerName != "" {
 		loggerName = e.LoggerName
 	}
-	return fmt.Sprintf("Logger: %s\n%s\n%s\n%s\n%s", loggerName, e.Time, e.Level, e.Caller, e.Message)
+	return fmt.Sprintf("Logger: %s\n%s\n%s\n%s\n%s\n%s", loggerName, e.Time, e.Level, e.Caller, e.Message, e.Stack)
 }
 
 func (c *telegramClient) sendMessage(e zapcore.Entry) error {

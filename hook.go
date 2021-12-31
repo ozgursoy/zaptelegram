@@ -88,6 +88,8 @@ func (h *TelegramHook) InitQueue() error {
 	if err != nil {
 		return err
 	}
+
+	s.StartAsync()
 	return nil
 }
 
@@ -100,10 +102,12 @@ func (h *TelegramHook) isActualLevel(l zapcore.Level) bool {
 	return false
 }
 
+// Collect the log to send all at one time
 func (h *TelegramHook) pushMessage(e zapcore.Entry) {
 	h.messages = append(h.messages, e)
 }
 
+// Format all the logs then send to telegram (async)
 func (h *TelegramHook) consume() {
 	if len(h.messages) > 0 {
 		go func() {
