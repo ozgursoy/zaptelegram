@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/go-co-op/gocron"
 	"go.uber.org/zap/zapcore"
+	"time"
 )
 
 const (
@@ -81,7 +82,7 @@ func (h *TelegramHook) GetHook() func(zapcore.Entry) error {
 }
 
 func (h *TelegramHook) InitQueue() error {
-	s := gocron.NewScheduler(nil)
+	s := gocron.NewScheduler(time.UTC)
 	_, err := s.Every(h.interval).Minutes().Do(func() {
 		h.consume()
 	})
