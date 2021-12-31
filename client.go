@@ -2,12 +2,12 @@ package zaptelegram
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -15,6 +15,7 @@ var (
 	BaseAPIURL        = "https://api.telegram.org/bot"
 	defaultLoggerName = "zaptelegram"
 	RequestError      = errors.New("request error")
+	json              = jsoniter.ConfigCompatibleWithStandardLibrary
 )
 
 const (
@@ -52,7 +53,7 @@ func (c *telegramClient) formatMessage(e zapcore.Entry) string {
 	if e.LoggerName != "" {
 		loggerName = e.LoggerName
 	}
-	return fmt.Sprintf("Logger: %s\n%s\n%s\n%s", loggerName, e.Time, e.Level, e.Message)
+	return fmt.Sprintf("Logger: %s\n%s\n%s\n%s\n%s", loggerName, e.Time, e.Level, e.Caller, e.Message)
 }
 
 func (c *telegramClient) sendMessage(e zapcore.Entry) error {
@@ -63,6 +64,29 @@ func (c *telegramClient) sendMessage(e zapcore.Entry) error {
 		DisableNotification bool   `json:"disable_notification"`
 	}{
 		Text:                c.formatMessage(e),
+		DisableNotification: c.disabledNotification,
+	}
+	for _, chatID := range c.chatIDs {
+		body.ChatID = chatID
+		msg, err := json.Marshal(&body)
+		if err != nil {
+			return err
+		}
+		if err := c.post(url, msg); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *telegramClient) sendMessages(messages string) error {
+	url := fmt.Sprintf("%s%s/sendMessage", BaseAPIURL, c.token)
+	body := struct {
+		ChatID              int    `json:"chat_id"`
+		Text                string `json:"text"`
+		DisableNotification bool   `json:"disable_notification"`
+	}{
+		Text:                messages,
 		DisableNotification: c.disabledNotification,
 	}
 	for _, chatID := range c.chatIDs {

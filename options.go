@@ -44,6 +44,15 @@ func WithFormatter(f func(e zapcore.Entry) string) Option {
 	}
 }
 
+func WithQueue(interval int) Option {
+	return func(h *TelegramHook) error {
+		h.queue = true
+		h.async = false
+		h.interval = interval
+		return nil
+	}
+}
+
 func WithoutAsyncOpt() Option {
 	return func(h *TelegramHook) error {
 		h.async = false
